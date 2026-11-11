@@ -27,45 +27,101 @@ export function getConnectedElements(
   return { nodeIds, edgeIds };
 }
 
-export function getSearchMatches(
-  query: string,
-  nodes: GraphNode[],
-): Set<string> {
-  const matches = new Set<string>();
-  const trimmed = query.trim().toLowerCase();
-  if (!trimmed) return matches;
-
-  for (const node of nodes) {
-    if (node.id.toLowerCase().includes(trimmed)) {
-      matches.add(node.id);
-    }
-  }
-
-  return matches;
-}
-
-export const FOLDER_COLORS: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  src: { bg: "bg-cyan-950/40", border: "border-cyan-500/50", text: "text-cyan-300", badge: "bg-cyan-500/20 text-cyan-300 border-cyan-500/40" },
-  app: { bg: "bg-blue-950/40", border: "border-blue-500/50", text: "text-blue-300", badge: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
-  lib: { bg: "bg-emerald-950/40", border: "border-emerald-500/50", text: "text-emerald-300", badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
-  components: { bg: "bg-violet-950/40", border: "border-violet-500/50", text: "text-violet-300", badge: "bg-violet-500/20 text-violet-300 border-violet-500/40" },
-  utils: { bg: "bg-teal-950/40", border: "border-teal-500/50", text: "text-teal-300", badge: "bg-teal-500/20 text-teal-300 border-teal-500/40" },
-  hooks: { bg: "bg-pink-950/40", border: "border-pink-500/50", text: "text-pink-300", badge: "bg-pink-500/20 text-pink-300 border-pink-500/40" },
-  pages: { bg: "bg-indigo-950/40", border: "border-indigo-500/50", text: "text-indigo-300", badge: "bg-indigo-500/20 text-indigo-300 border-indigo-500/40" },
-  routes: { bg: "bg-amber-950/40", border: "border-amber-500/50", text: "text-amber-300", badge: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-  models: { bg: "bg-rose-950/40", border: "border-rose-500/50", text: "text-rose-300", badge: "bg-rose-500/20 text-rose-300 border-rose-500/40" },
-  controllers: { bg: "bg-orange-950/40", border: "border-orange-500/50", text: "text-orange-300", badge: "bg-orange-500/20 text-orange-300 border-orange-500/40" },
-  services: { bg: "bg-sky-950/40", border: "border-sky-500/50", text: "text-sky-300", badge: "bg-sky-500/20 text-sky-300 border-sky-500/40" },
-  test: { bg: "bg-zinc-900/40", border: "border-zinc-500/50", text: "text-zinc-300", badge: "bg-zinc-500/20 text-zinc-300 border-zinc-500/40" },
-  tests: { bg: "bg-zinc-900/40", border: "border-zinc-500/50", text: "text-zinc-300", badge: "bg-zinc-500/20 text-zinc-300 border-zinc-500/40" },
-  "(root)": { bg: "bg-slate-900/60", border: "border-slate-600/50", text: "text-slate-300", badge: "bg-slate-700/30 text-slate-300 border-slate-600/40" },
+export const FOLDER_COLORS: Record<
+  string,
+  { bg: string; border: string; text: string; badge: string }
+> = {
+  src: {
+    bg: "bg-[#f2f7f3]",
+    border: "border-[#c8d9cc]",
+    text: "text-[#3c6247]",
+    badge: "bg-[#e3eee5] text-[#3c6247] border-[#c8d9cc]",
+  },
+  app: {
+    bg: "bg-[#f1f6fa]",
+    border: "border-[#c9dbe6]",
+    text: "text-[#3e6075]",
+    badge: "bg-[#e2eef5] text-[#3e6075] border-[#c9dbe6]",
+  },
+  lib: {
+    bg: "bg-[#faf6ec]",
+    border: "border-[#e4d6b8]",
+    text: "text-[#755823]",
+    badge: "bg-[#f3e9d2] text-[#755823] border-[#e4d6b8]",
+  },
+  components: {
+    bg: "bg-[#f8f4f8]",
+    border: "border-[#ded1e1]",
+    text: "text-[#654a6c]",
+    badge: "bg-[#efe7f2] text-[#654a6c] border-[#ded1e1]",
+  },
+  utils: {
+    bg: "bg-[#eff6f5]",
+    border: "border-[#c6dad6]",
+    text: "text-[#33625c]",
+    badge: "bg-[#e1efec] text-[#33625c] border-[#c6dad6]",
+  },
+  hooks: {
+    bg: "bg-[#fbf3f3]",
+    border: "border-[#e7d0d0]",
+    text: "text-[#804343]",
+    badge: "bg-[#f5e5e5] text-[#804343] border-[#e7d0d0]",
+  },
+  pages: {
+    bg: "bg-[#f4f5fb]",
+    border: "border-[#d7d9ea]",
+    text: "text-[#50547a]",
+    badge: "bg-[#e9eaf5] text-[#50547a] border-[#d7d9ea]",
+  },
+  routes: {
+    bg: "bg-[#fbf4ea]",
+    border: "border-[#ead6bd]",
+    text: "text-[#7c5528]",
+    badge: "bg-[#f5e9d7] text-[#7c5528] border-[#ead6bd]",
+  },
+  models: {
+    bg: "bg-[#f7f3f9]",
+    border: "border-[#dfd2e5]",
+    text: "text-[#5f4a6d]",
+    badge: "bg-[#efe7f3] text-[#5f4a6d] border-[#dfd2e5]",
+  },
+  controllers: {
+    bg: "bg-[#fbf3ed]",
+    border: "border-[#e8d4c4]",
+    text: "text-[#7b4e30]",
+    badge: "bg-[#f5e7db] text-[#7b4e30] border-[#e8d4c4]",
+  },
+  services: {
+    bg: "bg-[#f1f6f8]",
+    border: "border-[#cbdbe2]",
+    text: "text-[#3d5f6b]",
+    badge: "bg-[#e3eef2] text-[#3d5f6b] border-[#cbdbe2]",
+  },
+  test: {
+    bg: "bg-[#f5f5f1]",
+    border: "border-[#dcdcd2]",
+    text: "text-[#5c5e54]",
+    badge: "bg-[#ebebe4] text-[#5c5e54] border-[#dcdcd2]",
+  },
+  tests: {
+    bg: "bg-[#f5f5f1]",
+    border: "border-[#dcdcd2]",
+    text: "text-[#5c5e54]",
+    badge: "bg-[#ebebe4] text-[#5c5e54] border-[#dcdcd2]",
+  },
+  "(root)": {
+    bg: "bg-[#f4f4ef]",
+    border: "border-[#d6d6cc]",
+    text: "text-[#4d5048]",
+    badge: "bg-[#e9e9e2] text-[#4d5048] border-[#d6d6cc]",
+  },
 };
 
 const DEFAULT_COLOR = {
-  bg: "bg-slate-900/50",
-  border: "border-slate-700/60",
-  text: "text-slate-200",
-  badge: "bg-slate-700/30 text-slate-300 border-slate-600/40",
+  bg: "bg-surface-2",
+  border: "border-line-strong",
+  text: "text-muted",
+  badge: "bg-surface-3 text-muted border-line-strong",
 };
 
 export function getFolderTheme(folder: string) {

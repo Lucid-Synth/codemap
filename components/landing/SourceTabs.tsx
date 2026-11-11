@@ -11,43 +11,47 @@ export function SourceTabs() {
   const { stage } = useAnalysisStore();
   const isAnalyzing = stage !== "idle" && stage !== "done" && stage !== "error";
 
-  return (
-    <div className="w-full max-w-xl mx-auto space-y-6">
-      <div className="flex p-1 bg-slate-900 border border-slate-800 rounded-xl shadow-inner">
-        <button
-          type="button"
-          onClick={() => setActiveTab("github")}
-          disabled={isAnalyzing}
-          className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
-            activeTab === "github"
-              ? "bg-slate-800 text-cyan-400 shadow-sm border border-slate-700/60"
-              : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <span>GitHub Repository</span>
-        </button>
+  const tabs = [
+    { id: "github" as const, label: "GitHub repository" },
+    { id: "zip" as const, label: "ZIP archive" },
+  ];
 
-        <button
-          type="button"
-          onClick={() => setActiveTab("zip")}
-          disabled={isAnalyzing}
-          className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all cursor-pointer flex items-center justify-center gap-2 ${
-            activeTab === "zip"
-              ? "bg-slate-800 text-cyan-400 shadow-sm border border-slate-700/60"
-              : "text-slate-400 hover:text-slate-200"
-          }`}
+  return (
+    <div className="w-full">
+      <div className="rounded-xl border border-line bg-surface p-1 shadow-[0_1px_2px_rgba(20,22,26,0.04)]">
+        <div
+          role="tablist"
+          aria-label="Source to analyse"
+          className="grid grid-cols-2 gap-1"
         >
-          <span>Upload ZIP Archive</span>
-        </button>
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveTab(tab.id)}
+                disabled={isAnalyzing}
+                className={`rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  isActive
+                    ? "bg-ink text-background shadow-sm"
+                    : "text-muted hover:bg-surface-2 hover:text-ink"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="pt-2">
+      <div className="mt-4">
         {activeTab === "github" ? <GithubForm /> : <ZipDropzone />}
       </div>
 
-      <div className="pt-2">
-        <ProgressStages />
-      </div>
+      <ProgressStages />
     </div>
   );
 }

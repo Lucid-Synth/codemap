@@ -12,7 +12,6 @@ export interface AnalysisStore {
   result: AnalysisResult | null;
   error: string | null;
   selectedNodeId: string | null;
-  searchQuery: string;
   showImpact: boolean;
   impactedNodes: Set<string>;
   highlightedNodes: Set<string>;
@@ -27,7 +26,6 @@ export interface AnalysisStore {
   setResult: (result: AnalysisResult | null) => void;
   setError: (error: string | null) => void;
   selectNode: (nodeId: string | null) => void;
-  setSearchQuery: (query: string) => void;
   toggleImpact: () => void;
   focusCycle: (cycle: string[]) => void;
   clearCycleHighlight: () => void;
@@ -47,7 +45,6 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   result: null,
   error: null,
   selectedNodeId: null,
-  searchQuery: "",
   showImpact: false,
   impactedNodes: new Set<string>(),
   highlightedNodes: new Set<string>(),
@@ -81,8 +78,6 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       impactedNodes: nextImpacted,
     });
   },
-
-  setSearchQuery: (query) => set({ searchQuery: query }),
 
   toggleImpact: () => {
     const { showImpact, selectedNodeId, result } = get();
@@ -147,7 +142,6 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       result: null,
       error: null,
       selectedNodeId: null,
-      searchQuery: "",
       showImpact: false,
       impactedNodes: new Set<string>(),
       highlightedNodes: new Set<string>(),

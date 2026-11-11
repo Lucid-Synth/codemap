@@ -3,12 +3,13 @@
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { LuArrowLeft } from "react-icons/lu";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 import { GraphCanvas } from "@/components/graph/GraphCanvas";
 import { StatsBar } from "@/components/panels/StatsBar";
 import { InspectorPanel } from "@/components/panels/InspectorPanel";
-import { SearchBox } from "@/components/panels/SearchBox";
 import { CycleBanner } from "@/components/panels/CycleBanner";
+import { BrandMark } from "@/components/BrandMark";
 
 export default function ExplorePage() {
   const router = useRouter();
@@ -24,10 +25,10 @@ export default function ExplorePage() {
 
   if (!result) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-slate-950 text-slate-400">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm font-mono">Loading analysis...</span>
+      <div className="flex h-dvh w-full items-center justify-center bg-background text-muted">
+        <div className="flex items-center gap-3 text-[13px]">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
+          Loading analysis…
         </div>
       </div>
     );
@@ -39,47 +40,50 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
-      <header className="h-14 border-b border-slate-800 bg-slate-900/90 px-4 md:px-6 flex items-center justify-between gap-4 z-30 shrink-0">
-        <div className="flex items-center gap-3">
+    <div className="flex h-dvh w-full flex-col overflow-hidden bg-background text-ink">
+      <header className="z-30 shrink-0 border-b border-line bg-background/90 backdrop-blur-md">
+        <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
           <Link
             href="/"
             onClick={reset}
-            className="flex items-center gap-2 group cursor-pointer"
+            className="group flex shrink-0 items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+            aria-label="Back to CodeMap home"
           >
-            <div className="w-7 h-7 rounded-lg bg-cyan-500 flex items-center justify-center font-bold text-slate-950 text-sm shadow-md shadow-cyan-500/20 group-hover:bg-cyan-400 transition-colors">
-              CM
-            </div>
-            <span className="font-bold text-sm tracking-tight text-slate-100 group-hover:text-cyan-400 transition-colors">
+            <BrandMark className="h-7 w-7 transition-transform duration-200 group-hover:-rotate-6" />
+            <span className="text-[14px] font-semibold tracking-tight text-ink">
               CodeMap
             </span>
           </Link>
-          <span className="text-slate-600 hidden sm:inline">/</span>
-          <span className="text-xs text-slate-400 hidden sm:inline truncate max-w-50">
-            {result.repo.name}
+
+          <span className="hidden text-line-strong sm:inline" aria-hidden>
+            /
           </span>
-        </div>
 
-        <div className="flex-1 max-w-sm mx-auto hidden sm:block">
-          <SearchBox />
-        </div>
+          <div className="hidden min-w-0 items-center gap-2 sm:flex">
+            <span className="max-w-64 truncate font-mono text-[12px] text-muted">
+              {result.repo.owner}/{result.repo.name}
+            </span>
+            <span className="rounded border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[10px] text-faint">
+              @{result.repo.branch}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={handleReset}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-200 hover:text-cyan-300 text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer"
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[12px] font-medium text-muted transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
           >
-            <span>←</span>
-            <span>Analyze Another</span>
+            <LuArrowLeft className="h-3.5 w-3.5" aria-hidden />
+            <span className="hidden sm:inline">New analysis</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
       </header>
 
       <StatsBar />
 
-      <main className="flex-1 flex relative overflow-hidden">
-        <div className="flex-1 relative h-full">
+      <main className="relative flex min-h-0 flex-1 overflow-hidden">
+        <div className="relative min-w-0 flex-1">
           <CycleBanner />
           <GraphCanvas />
         </div>

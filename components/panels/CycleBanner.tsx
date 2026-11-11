@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { LuTriangleAlert } from "react-icons/lu";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 export function CycleBanner() {
@@ -14,64 +15,71 @@ export function CycleBanner() {
   const isHighlighting = cycleHighlightNodes.size > 0;
 
   return (
-    <div className="absolute top-4 left-6 z-20 max-w-xl">
-      <div className="bg-red-950/85 border border-red-800/80 rounded-xl p-3 shadow-xl backdrop-blur-md text-xs text-red-200">
+    <div className="absolute left-3 top-3 z-20 max-w-[calc(100%-1.5rem)] sm:left-4 sm:top-4 sm:max-w-md">
+      <div className="rounded-xl border border-danger-line bg-danger-soft/95 p-3 text-xs text-danger shadow-[0_12px_32px_-24px_rgba(120,40,20,0.55)] backdrop-blur-md">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-red-400 text-sm font-bold animate-pulse">⚠</span>
-            <span className="font-semibold text-red-100">
-              {cycleCount} Circular Dependenc{cycleCount === 1 ? "y" : "ies"} Detected
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#f3dcd5] text-danger">
+              <LuTriangleAlert className="h-3.5 w-3.5" aria-hidden />
+            </span>
+            <span className="truncate font-medium text-[#6f2618]">
+              {cycleCount} circular{" "}
+              {cycleCount === 1 ? "dependency" : "dependencies"}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1.5">
             {isHighlighting && (
               <button
                 type="button"
                 onClick={clearCycleHighlight}
-                className="text-[11px] px-2 py-0.5 rounded bg-red-900/60 hover:bg-red-800 text-red-300 transition-colors cursor-pointer"
+                className="rounded border border-danger-line bg-surface/70 px-2 py-1 text-[10px] font-medium text-danger transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/25"
               >
-                Clear Focus
+                Clear
               </button>
             )}
             <button
               type="button"
-              onClick={() => setExpanded(!expanded)}
-              className="text-[11px] underline text-red-300 hover:text-red-100 transition-colors cursor-pointer"
+              onClick={() => setExpanded((value) => !value)}
+              aria-expanded={expanded}
+              className="rounded px-1.5 py-1 text-[10px] font-medium text-danger/80 transition-colors hover:bg-[#f3dcd5] hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/25"
             >
-              {expanded ? "Hide Details" : "View Cycles"}
+              {expanded ? "Hide" : "View"}
             </button>
           </div>
         </div>
 
         {expanded && (
-          <div className="mt-3 pt-2.5 border-t border-red-900/60 space-y-2 max-h-56 overflow-y-auto">
+          <div className="mt-3 max-h-56 space-y-1.5 overflow-y-auto border-t border-danger-line/70 pt-2.5">
             {result.cycles.map((cycle, index) => (
-              <div
+              <button
                 key={index}
+                type="button"
                 onClick={() => focusCycle(cycle)}
-                className="p-2 rounded bg-red-900/40 hover:bg-red-900/70 border border-red-800/40 cursor-pointer transition-colors"
-                title="Click to highlight this cycle on the canvas"
+                className="w-full rounded-lg border border-danger-line/60 bg-surface/55 px-2.5 py-2 text-left transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/25"
+                title="Highlight this cycle on the canvas"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[11px] text-red-300">
-                    Cycle #{index + 1} ({cycle.length} files)
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.06em] text-danger">
+                    Cycle #{index + 1} · {cycle.length} files
                   </span>
-                  <span className="text-[10px] text-red-400 font-sans">
-                    Click to inspect
-                  </span>
+                  <span className="text-[10px] text-muted">Inspect</span>
                 </div>
-                <div className="font-mono text-[11px] text-red-200 leading-relaxed break-all">
+                <div className="break-all font-mono text-[11px] leading-relaxed text-muted">
                   {cycle.map((filePath, i) => (
                     <span key={filePath}>
-                      <span className="text-red-100 font-semibold">
+                      <span className="font-medium text-ink">
                         {filePath.split("/").pop()}
                       </span>
-                      {i < cycle.length - 1 ? " ➔ " : " ➔ (loop)"}
+                      {i < cycle.length - 1 ? (
+                        <span className="text-faint"> → </span>
+                      ) : (
+                        <span className="text-danger"> → loop</span>
+                      )}
                     </span>
                   ))}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}
