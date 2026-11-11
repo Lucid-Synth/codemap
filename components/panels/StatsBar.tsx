@@ -11,72 +11,88 @@ export function StatsBar() {
   const { stats, repo } = result;
 
   return (
-    <div className="w-full bg-slate-900/90 border-b border-slate-800 px-6 py-2.5 flex items-center justify-between text-xs text-slate-300 font-mono backdrop-blur-md z-10 flex-wrap gap-3">
-      <div className="flex items-center gap-2">
-        <span className="text-slate-400 font-sans font-medium text-xs">Repo:</span>
-        <span className="text-cyan-400 font-bold bg-cyan-950/40 px-2 py-0.5 rounded border border-cyan-800/40">
+    <div className="z-10 flex w-full flex-wrap items-center gap-x-6 gap-y-2 border-b border-line bg-surface/70 px-4 py-2 backdrop-blur-md sm:px-6">
+      <div className="flex items-center gap-2 font-mono sm:hidden">
+        <span className="max-w-48 truncate rounded border border-line bg-surface px-1.5 py-0.5 text-[11px] font-medium text-ink">
           {repo.owner}/{repo.name}
         </span>
-        <span className="text-slate-400 text-[11px]">@{repo.branch}</span>
+        <span className="text-[10px] text-faint">@{repo.branch}</span>
       </div>
 
-      <div className="flex items-center gap-5 flex-wrap">
-        <div>
-          <span className="text-slate-400 font-sans">Files: </span>
-          <span className="text-slate-100 font-semibold">{stats.files}</span>
+      <dl className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+            Files
+          </dt>
+          <dd className="font-mono text-[12px] font-semibold tabular-nums text-ink">
+            {stats.files}
+          </dd>
         </div>
 
-        <div className="h-3 w-px bg-slate-800" />
+        <div className="h-3.5 w-px bg-line" aria-hidden />
 
-        <div>
-          <span className="text-slate-400 font-sans">Lines: </span>
-          <span className="text-slate-100 font-semibold">
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+            Lines
+          </dt>
+          <dd className="font-mono text-[12px] font-semibold tabular-nums text-ink">
             {stats.lines.toLocaleString()}
-          </span>
+          </dd>
         </div>
 
-        <div className="h-3 w-px bg-slate-800" />
+        <div className="h-3.5 w-px bg-line" aria-hidden />
 
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-400 font-sans">Cycles: </span>
-          <span
-            className={`font-semibold px-1.5 py-0.2 rounded border ${
-              stats.cycles > 0
-                ? "bg-red-950/60 text-red-400 border-red-800/80 animate-pulse"
-                : "bg-emerald-950/40 text-emerald-400 border-emerald-800/40"
-            }`}
-          >
-            {stats.cycles}
-          </span>
+          <dt className="text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+            Cycles
+          </dt>
+          <dd>
+            <span
+              className={`inline-flex min-w-5 items-center justify-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums ${
+                stats.cycles > 0
+                  ? "border-danger-line bg-danger-soft text-danger"
+                  : "border-success-line bg-success-soft text-success"
+              }`}
+            >
+              {stats.cycles}
+            </span>
+          </dd>
         </div>
 
-        <div className="h-3 w-px bg-slate-800" />
-
         {stats.mostConnected && (
-          <div className="hidden md:flex items-center gap-1">
-            <span className="text-slate-400 font-sans">Top Hub: </span>
-            <span
-              className="text-cyan-300 truncate max-w-40"
-              title={`${stats.mostConnected} (${stats.mostConnectedCount} connections)`}
-            >
-              {stats.mostConnected.split("/").pop()}
-            </span>
-            <span className="text-slate-400 text-[11px]">
-              ({stats.mostConnectedCount})
-            </span>
-          </div>
+          <>
+            <div className="hidden h-3.5 w-px bg-line md:block" aria-hidden />
+            <div className="hidden items-baseline gap-1.5 md:flex">
+              <dt className="text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                Top hub
+              </dt>
+              <dd
+                className="max-w-40 truncate font-mono text-[12px] font-medium text-ink"
+                title={`${stats.mostConnected} (${stats.mostConnectedCount} connections)`}
+              >
+                {stats.mostConnected.split("/").pop()}
+              </dd>
+              <span className="font-mono text-[10px] text-faint">
+                {stats.mostConnectedCount}
+              </span>
+            </div>
+          </>
         )}
 
         {stats.orphans.length > 0 && (
           <>
-            <div className="h-3 w-px bg-slate-800" />
-            <div className="hidden lg:flex items-center gap-1 text-slate-400">
-              <span className="font-sans">Orphans: </span>
-              <span className="text-slate-300">{stats.orphans.length}</span>
+            <div className="hidden h-3.5 w-px bg-line lg:block" aria-hidden />
+            <div className="hidden items-baseline gap-1.5 lg:flex">
+              <dt className="text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
+                Isolated
+              </dt>
+              <dd className="font-mono text-[12px] font-semibold tabular-nums text-ink">
+                {stats.orphans.length}
+              </dd>
             </div>
           </>
         )}
-      </div>
+      </dl>
     </div>
   );
 }

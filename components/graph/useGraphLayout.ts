@@ -8,7 +8,7 @@ import type { Node, Edge } from "@xyflow/react";
 import type { FileNodeData } from "./FileNode";
 
 export const NODE_WIDTH = 210;
-export const NODE_HEIGHT = 72;
+export const NODE_HEIGHT = 92;
 export const FOLDER_NODE_WIDTH = 200;
 export const FOLDER_NODE_HEIGHT = 44;
 
@@ -198,12 +198,14 @@ export function computeFileSystemTree(
   flowNodes.push({
     id: rootId,
     type: "fileNode",
+    width: FOLDER_NODE_WIDTH,
+    height: FOLDER_NODE_HEIGHT,
     position: {
       x: rootDagre ? rootDagre.x - FOLDER_NODE_WIDTH / 2 : 0,
       y: rootDagre ? rootDagre.y - FOLDER_NODE_HEIGHT / 2 : 0,
     },
     data: {
-      label: `📁 ${repoName}`,
+      label: repoName,
       fullPath: "/",
       folder: "(root)",
       lines: 0,
@@ -223,6 +225,8 @@ export function computeFileSystemTree(
     flowNodes.push({
       id: folderId,
       type: "fileNode",
+      width: FOLDER_NODE_WIDTH,
+      height: FOLDER_NODE_HEIGHT,
       position: {
         x: dagreNode ? dagreNode.x - FOLDER_NODE_WIDTH / 2 : 0,
         y: dagreNode ? dagreNode.y - FOLDER_NODE_HEIGHT / 2 : 0,
@@ -248,6 +252,8 @@ export function computeFileSystemTree(
     flowNodes.push({
       id: node.id,
       type: "fileNode",
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
       position: {
         x: dagreNode ? dagreNode.x - NODE_WIDTH / 2 : 0,
         y: dagreNode ? dagreNode.y - NODE_HEIGHT / 2 : 0,
@@ -273,9 +279,9 @@ export function computeFileSystemTree(
     targetHandle: rankdir === "TB" ? "target-top" : "target-left",
     type: "smoothstep",
     style: {
-      stroke: "#06b6d4",
+      stroke: "#b9bab1",
       strokeWidth: 1.5,
-      opacity: 0.6,
+      opacity: 0.72,
     },
   }));
 

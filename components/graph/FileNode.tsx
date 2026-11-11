@@ -6,6 +6,7 @@
 
 import React, { memo } from "react";
 import { Handle, Position, NodeProps } from "@xyflow/react";
+import { LuFolder } from "react-icons/lu";
 import { getFolderTheme } from "./graphHighlight";
 
 export type FileNodeData = {
@@ -22,7 +23,6 @@ export type FileNodeData = {
   isInCycle?: boolean;
   isHighlighted?: boolean;
   isDimmed?: boolean;
-  isSearchMatch?: boolean;
   [key: string]: unknown;
 };
 
@@ -43,7 +43,6 @@ export const FileNode = memo(function FileNode({
     isInCycle,
     isHighlighted,
     isDimmed,
-    isSearchMatch,
   } = data;
 
   const theme = getFolderTheme(folder);
@@ -54,37 +53,30 @@ export const FileNode = memo(function FileNode({
   const isLeaf = !isFolder && importsCount === 0 && importedByCount > 0;
   const isOrphan = !isFolder && importsCount === 0 && importedByCount === 0;
 
-  // Border & Glow styling
+  // Border & ring styling for the active state
   let borderStyle = theme.border;
   let ringStyle = "";
-  let glowStyle = "";
 
   if (isInCycle) {
-    borderStyle = "border-red-500";
-    ringStyle = "ring-2 ring-red-500/80";
-    glowStyle = "shadow-[0_0_18px_rgba(239,68,68,0.45)]";
+    borderStyle = "border-danger";
+    ringStyle = "ring-2 ring-danger/20";
   } else if (isImpacted) {
-    borderStyle = "border-amber-400";
-    ringStyle = "ring-2 ring-amber-400/80";
-    glowStyle = "shadow-[0_0_18px_rgba(251,191,36,0.4)]";
+    borderStyle = "border-warning";
+    ringStyle = "ring-2 ring-warning/20";
   } else if (isSelfSelected) {
-    borderStyle = "border-cyan-400";
-    ringStyle = "ring-2 ring-cyan-400";
-    glowStyle = "shadow-[0_0_18px_rgba(34,211,238,0.45)]";
+    borderStyle = "border-accent";
+    ringStyle = "ring-2 ring-accent/20";
   } else if (isHighlighted) {
-    borderStyle = "border-cyan-400/80";
-    ringStyle = "ring-1 ring-cyan-400/60";
-  } else if (isSearchMatch) {
-    borderStyle = "border-emerald-400";
-    ringStyle = "ring-2 ring-emerald-400/80";
+    borderStyle = "border-accent/70";
+    ringStyle = "ring-1 ring-accent/10";
   }
 
   // Folder Node Card (for File System Tree View)
   if (isFolder) {
     return (
       <div
-        className={`relative group rounded-xl px-4 py-2.5 border transition-all duration-150 backdrop-blur-md cursor-pointer select-none min-w-[190px] max-w-[260px] bg-slate-900/90 border-cyan-500/50 shadow-lg shadow-cyan-950/20 ${ringStyle} ${glowStyle} ${
-          isDimmed ? "opacity-25" : "opacity-100"
+        className={`relative min-w-[190px] max-w-[260px] cursor-pointer select-none rounded-lg border px-3 py-2.5 shadow-[0_1px_2px_rgba(20,22,26,0.05)] transition-all duration-150 ${theme.bg} ${borderStyle} ${ringStyle} ${
+          isDimmed ? "opacity-30" : "opacity-100"
         }`}
         title={`Directory: ${fullPath}`}
       >
@@ -92,24 +84,26 @@ export const FileNode = memo(function FileNode({
           type="target"
           id="target-top"
           position={Position.Top}
-          className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900"
         />
         <Handle
           type="target"
           id="target-left"
           position={Position.Left}
-          className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900"
         />
 
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm">📁</span>
-            <span className="font-bold text-xs text-cyan-300 font-mono truncate">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <LuFolder className={`h-3.5 w-3.5 shrink-0 ${theme.text}`} aria-hidden />
+            <span
+              className={`truncate font-mono text-[11px] font-semibold ${theme.text}`}
+            >
               {label}
             </span>
           </div>
           {typeof itemCount === "number" && (
-            <span className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700 font-mono shrink-0">
+            <span
+              className={`shrink-0 rounded border px-1.5 py-0.5 font-mono text-[9px] ${theme.badge}`}
+            >
               {itemCount} {itemCount === 1 ? "item" : "items"}
             </span>
           )}
@@ -119,13 +113,11 @@ export const FileNode = memo(function FileNode({
           type="source"
           id="source-bottom"
           position={Position.Bottom}
-          className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900"
         />
         <Handle
           type="source"
           id="source-right"
           position={Position.Right}
-          className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900"
         />
       </div>
     );
@@ -134,10 +126,10 @@ export const FileNode = memo(function FileNode({
   // File Node Card (for Dependency & File System Tree Views)
   return (
     <div
-      className={`relative group rounded-xl px-3.5 py-2.5 border transition-all duration-150 backdrop-blur-md cursor-pointer select-none min-w-[185px] max-w-[245px] ${
+      className={`relative min-w-[185px] max-w-[245px] cursor-pointer select-none rounded-lg border px-3 py-2.5 shadow-[0_1px_2px_rgba(20,22,26,0.05)] transition-all duration-150 hover:shadow-[0_4px_14px_-6px_rgba(20,22,26,0.18)] ${
         theme.bg
-      } ${borderStyle} ${ringStyle} ${glowStyle} ${
-        isDimmed ? "opacity-25" : "opacity-100"
+      } ${borderStyle} ${ringStyle} ${
+        isDimmed ? "opacity-30" : "opacity-100"
       }`}
       title={fullPath}
     >
@@ -146,61 +138,54 @@ export const FileNode = memo(function FileNode({
         type="target"
         id="target-top"
         position={Position.Top}
-        className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900 transition-colors"
       />
       <Handle
         type="target"
         id="target-left"
         position={Position.Left}
-        className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900 transition-colors"
       />
 
-      {/* Header: Tree Role Badge + Folder Badge */}
-      <div className="flex items-center justify-between gap-1 text-[10px] mb-1 font-mono">
+      {/* Header: Folder badge + tree role */}
+      <div className="mb-1.5 flex items-center justify-between gap-1.5 font-mono text-[10px]">
         <span
-          className={`px-1.5 py-0.2 rounded border font-medium truncate max-w-[95px] ${theme.badge}`}
+          className={`max-w-[100px] truncate rounded border px-1.5 py-0.5 font-medium ${theme.badge}`}
         >
           {folder}
         </span>
 
-        {/* Tree hierarchy tag */}
         {isRoot && (
-          <span className="px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] font-semibold flex items-center gap-0.5">
-            <span>🌲</span>
-            <span>Root</span>
+          <span className="rounded border border-accent/25 bg-accent-soft px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-accent">
+            root
           </span>
         )}
         {isLeaf && (
-          <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-semibold flex items-center gap-0.5">
-            <span>🍃</span>
-            <span>Leaf</span>
+          <span className="rounded border border-success-line bg-success-soft px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] text-success">
+            leaf
           </span>
         )}
         {isOrphan && (
-          <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700 text-[9px]">
-            Isolated
+          <span className="rounded border border-line bg-surface-2 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[0.06em] text-faint">
+            isolated
           </span>
         )}
         {!isRoot && !isLeaf && !isOrphan && (
-          <span className="text-slate-400 text-[10px]">{lines} lines</span>
+          <span className="text-faint">{lines} lines</span>
         )}
       </div>
 
-      {/* Node Label: File name */}
-      <div className="font-semibold text-xs tracking-tight text-slate-100 truncate font-mono">
+      {/* Node label: file name */}
+      <div className="truncate font-mono text-[12px] font-semibold tracking-tight text-ink">
         {label}
       </div>
 
-      {/* Node Footer: Connection counts */}
-      <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1.5 pt-1 border-t border-slate-700/40 font-mono">
-        <span title="Imports count (Dependencies)">
-          ⬇ <span className="text-slate-200 font-medium">{importsCount}</span>
+      {/* Footer: connection counts */}
+      <div className="mt-1.5 flex items-center justify-between border-t border-line/80 pt-1 font-mono text-[9px] text-faint">
+        <span title="Imports count (dependencies)">
+          ↓ <span className="font-medium text-ink">{importsCount}</span>
         </span>
-        <span className="text-slate-400 text-[9px]">
-          {lines}L
-        </span>
-        <span title="Imported by count (Dependents)">
-          ⬆ <span className="text-slate-200 font-medium">{importedByCount}</span>
+        <span>{lines}L</span>
+        <span title="Imported by count (dependents)">
+          ↑ <span className="font-medium text-ink">{importedByCount}</span>
         </span>
       </div>
 
@@ -209,13 +194,11 @@ export const FileNode = memo(function FileNode({
         type="source"
         id="source-bottom"
         position={Position.Bottom}
-        className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900 transition-colors"
       />
       <Handle
         type="source"
         id="source-right"
         position={Position.Right}
-        className="!w-2 !h-2 !bg-cyan-400 !border !border-slate-900 transition-colors"
       />
     </div>
   );

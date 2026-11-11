@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { LuArrowRight, LuFolder } from "react-icons/lu";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 export function ZipDropzone() {
@@ -32,7 +33,7 @@ export function ZipDropzone() {
     if (!droppedFile) return;
 
     if (!droppedFile.name.endsWith(".zip")) {
-      setError("Please drop a valid .zip file");
+      setError("That is not a .zip file");
       return;
     }
 
@@ -44,7 +45,7 @@ export function ZipDropzone() {
     const selected = e.target.files?.[0];
     if (selected) {
       if (!selected.name.endsWith(".zip")) {
-        setError("Please select a .zip file");
+        setError("That is not a .zip file");
         return;
       }
       setFile(selected);
@@ -62,18 +63,26 @@ export function ZipDropzone() {
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-4">
+    <div className="w-full space-y-3">
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+        className={`cursor-pointer rounded-xl border border-dashed px-6 py-10 text-center transition-colors ${
           isDragging
-            ? "border-cyan-400 bg-cyan-950/20"
+            ? "border-accent bg-accent-soft"
             : file
-            ? "border-cyan-500/50 bg-slate-900/80"
-            : "border-slate-800 hover:border-slate-700 bg-slate-900/40"
+            ? "border-line-strong bg-surface"
+            : "border-line bg-surface hover:border-line-strong hover:bg-surface-2"
         }`}
       >
         <input
@@ -85,46 +94,54 @@ export function ZipDropzone() {
           className="hidden"
         />
 
-        <div className="space-y-2">
-          <div className="text-3xl text-cyan-400">📦</div>
-          {file ? (
-            <div>
-              <p className="text-sm font-semibold text-slate-100 font-mono">
-                {file.name}
-              </p>
-              <p className="text-xs text-slate-400 mt-1">
-                {(file.size / (1024 * 1024)).toFixed(2)} MB • Click or drag to replace
-              </p>
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm font-medium text-slate-200">
-                Drag and drop your project ZIP here
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                or click to browse your computer
-              </p>
-            </div>
-          )}
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-surface-2 text-muted">
+          <LuFolder className="h-5 w-5" aria-hidden />
         </div>
+
+        {file ? (
+          <div className="mt-4">
+            <p className="font-mono text-[14px] font-medium text-ink">
+              {file.name}
+            </p>
+            <p className="mt-1 text-[13px] text-faint">
+              {(file.size / (1024 * 1024)).toFixed(2)} MB · click to replace
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4">
+            <p className="text-[15px] font-medium text-ink">
+              Drop a project ZIP here
+            </p>
+            <p className="mt-1 text-[13px] text-faint">
+              or click to browse your files
+            </p>
+          </div>
+        )}
       </div>
 
-      {error && <p className="text-xs text-red-400 px-1 font-medium">{error}</p>}
+      {error && (
+        <p role="alert" className="text-[13px] font-medium text-red-600">
+          {error}
+        </p>
+      )}
 
       {file && (
         <button
           type="button"
           onClick={handleUpload}
           disabled={isLoading}
-          className="w-full py-3.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3.5 text-[14px] font-medium text-background transition-all hover:bg-ink/85 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isLoading ? (
             <>
-              <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-              <span>Analyzing ZIP...</span>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-background/30 border-t-background" />
+              <span>Analysing archive</span>
             </>
           ) : (
-            <span>Analyze {file.name}</span>
+            <>
+              <span>Build the graph</span>
+              <LuArrowRight className="h-4 w-4" aria-hidden />
+            </>
           )}
         </button>
       )}

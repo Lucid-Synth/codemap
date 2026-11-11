@@ -17,17 +17,29 @@ import {
   type Node,
   type Edge,
 } from "@xyflow/react";
+import { LuMoveDown, LuMoveRight, LuScan } from "react-icons/lu";
 
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 import { FileNode, type FileNodeData } from "./FileNode";
-import { computeDagreLayout, computeFileSystemTree } from "./useGraphLayout";
-import { getConnectedElements, getSearchMatches } from "./graphHighlight";
+import {
+  computeDagreLayout,
+  computeFileSystemTree,
+  NODE_HEIGHT,
+  NODE_WIDTH,
+} from "./useGraphLayout";
+import { getConnectedElements } from "./graphHighlight";
 
 const nodeTypes = {
   fileNode: FileNode,
 };
 
-const EMPTY_SET = new Set<string>();
+const EDGE_DEFAULT = "#b6b7ae";
+const EDGE_HIGHLIGHT = "#bf4220";
+const EDGE_CYCLE = "#b23a22";
+const EDGE_TREE = "#b9bab1";
+
+const CONTROL_BUTTON =
+  "rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30";
 
 function FlowInner() {
   const {
@@ -39,7 +51,6 @@ function FlowInner() {
     highlightedEdges,
     cycleHighlightNodes,
     cycleHighlightEdges,
-    searchQuery,
     treeViewMode,
     treeOrientation,
     setTreeViewMode,
@@ -66,34 +77,19 @@ function FlowInner() {
     return computeFileSystemTree(result.nodes, result.repo.name, treeOrientation);
   }, [result, treeOrientation]);
 
-  // 3. Search matches
-  const searchMatches = useMemo(() => {
-    if (!result || !searchQuery.trim()) return EMPTY_SET;
-    return getSearchMatches(searchQuery, result.nodes);
-  }, [result, searchQuery]);
-
-  // 4. Determine final Nodes array based on active view mode
+  // 3. Determine final Nodes array based on active view mode
   const nodes: Node<FileNodeData>[] = useMemo(() => {
     if (!result || result.nodes.length === 0) return [];
 
     // A. File System Tree Mode
     if (treeViewMode === "filesystem") {
-      const hasActiveSelection = Boolean(selectedNodeId);
-      return fileSystemData.nodes.map((node) => {
-        const isSelected = selectedNodeId === node.id;
-        const isSearchMatch = searchMatches.has(node.id);
-        const isDimmed = hasActiveSelection && !isSelected && !isSearchMatch;
-
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            isSelected,
-            isDimmed,
-            isSearchMatch,
-          },
-        };
-      });
+      return fileSystemData.nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          isSelected: selectedNodeId === node.id,
+        },
+      }));
     }
 
     // B. Dependency Tree Mode
@@ -108,15 +104,13 @@ function FlowInner() {
       const isImpacted = impactedNodes.has(node.id);
       const isInCycle = cycleHighlightNodes.has(node.id);
       const isHighlighted = highlightedNodes.has(node.id);
-      const isSearchMatch = searchMatches.has(node.id);
 
       const isDimmed =
         hasActiveSelection &&
         !isSelected &&
         !isImpacted &&
         !isInCycle &&
-        !isHighlighted &&
-        !isSearchMatch;
+        !isHighlighted;
 
       const label = node.id.split("/").pop() || node.id;
 
@@ -124,6 +118,8 @@ function FlowInner() {
         id: node.id,
         type: "fileNode",
         position: pos,
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
         data: {
           label,
           fullPath: node.id,
@@ -136,7 +132,6 @@ function FlowInner() {
           isInCycle,
           isHighlighted,
           isDimmed,
-          isSearchMatch,
         },
       };
     });
@@ -149,10 +144,9 @@ function FlowInner() {
     impactedNodes,
     cycleHighlightNodes,
     highlightedNodes,
-    searchMatches,
   ]);
 
-  // 5. Determine final Edges array with tree arrowheads
+  // 4. Determine final Edges array with tree arrowheads
   const edges: Edge[] = useMemo(() => {
     if (!result) return [];
 
@@ -164,7 +158,7 @@ function FlowInner() {
           type: MarkerType.ArrowClosed,
           width: 14,
           height: 14,
-          color: "#06b6d4",
+          color: EDGE_TREE,
         },
       }));
     }
@@ -189,19 +183,19 @@ function FlowInner() {
       const isSourceSelected = selectedNodeId === edge.source;
       const isTargetSelected = selectedNodeId === edge.target;
 
-      let stroke = "#64748b"; // slate-500
+      let stroke = EDGE_DEFAULT;
       let strokeWidth = 1.4;
       let animated = false;
-      let opacity = 0.55;
+      let opacity = 0.6;
 
       if (isCycleEdge) {
-        stroke = "#ef4444"; // red-500
-        strokeWidth = 2.5;
+        stroke = EDGE_CYCLE;
+        strokeWidth = 2.4;
         animated = true;
         opacity = 1;
       } else if (isHighlighted || isSourceSelected || isTargetSelected) {
-        stroke = "#22d3ee"; // cyan-400
-        strokeWidth = 2.2;
+        stroke = EDGE_HIGHLIGHT;
+        strokeWidth = 2.1;
         animated = true;
         opacity = 1;
       } else if (hasActiveSelection) {
@@ -242,7 +236,7 @@ function FlowInner() {
     cycleHighlightNodes.size,
   ]);
 
-  // 6. Automatically fit view on repository load, mode switch, or orientation switch
+  // 5. Automatically fit view on repository load, mode switch, or orientation switch
   useEffect(() => {
     if (nodes.length > 0) {
       const timeout = setTimeout(() => {
@@ -282,73 +276,77 @@ function FlowInner() {
   }, [selectNode, clearHighlight]);
 
   return (
-    <div className="w-full h-full relative bg-slate-950">
-      {/* Floating Tree Controls */}
-      <div className="absolute top-4 right-6 z-20 flex items-center gap-2 bg-slate-900/95 border border-slate-800 rounded-xl p-1.5 shadow-xl backdrop-blur-md">
-        {/* View Mode: Dependency Tree vs Directory Tree */}
-        <div className="flex bg-slate-950/80 rounded-lg p-0.5 border border-slate-800">
+    <div className="relative h-full w-full bg-background">
+      {/* Floating tree controls */}
+      <div className="absolute bottom-3 left-1/2 z-20 flex w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-1 rounded-xl border border-line bg-surface/90 p-1 shadow-[0_1px_2px_rgba(20,22,26,0.04),0_16px_32px_-24px_rgba(20,22,26,0.35)] backdrop-blur-md sm:bottom-auto sm:left-auto sm:right-4 sm:top-4 sm:translate-x-0 sm:justify-start">
+        {/* View mode: dependency tree vs directory tree */}
+        <div className="flex rounded-lg border border-line bg-surface-2/70 p-0.5">
           <button
             type="button"
             onClick={() => setTreeViewMode("dependency")}
-            className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+            aria-pressed={treeViewMode === "dependency"}
+            className={`${CONTROL_BUTTON} ${
               treeViewMode === "dependency"
-                ? "bg-cyan-500 text-slate-950 font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-ink text-background shadow-sm"
+                : "text-muted hover:bg-surface hover:text-ink"
             }`}
           >
-            <span>🌲</span>
-            <span>Dependency Tree</span>
+            Dependencies
           </button>
           <button
             type="button"
             onClick={() => setTreeViewMode("filesystem")}
-            className={`px-3 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer flex items-center gap-1.5 ${
+            aria-pressed={treeViewMode === "filesystem"}
+            className={`${CONTROL_BUTTON} ${
               treeViewMode === "filesystem"
-                ? "bg-cyan-500 text-slate-950 font-semibold shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-ink text-background shadow-sm"
+                : "text-muted hover:bg-surface hover:text-ink"
             }`}
           >
-            <span>📁</span>
-            <span>Directory Tree</span>
+            Directories
           </button>
         </div>
 
-        {/* Orientation: Top-to-Bottom vs Left-to-Right */}
-        <div className="flex bg-slate-950/80 rounded-lg p-0.5 border border-slate-800">
+        {/* Orientation: top-down vs left-right */}
+        <div className="flex rounded-lg border border-line bg-surface-2/70 p-0.5">
           <button
             type="button"
             onClick={() => setTreeOrientation("TB")}
-            className={`px-2 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+            aria-pressed={treeOrientation === "TB"}
+            className={`${CONTROL_BUTTON} flex items-center gap-1 ${
               treeOrientation === "TB"
-                ? "bg-slate-800 text-cyan-300 border border-slate-700/80 font-semibold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-surface text-ink shadow-sm ring-1 ring-line"
+                : "text-muted hover:text-ink"
             }`}
-            title="Top-to-Bottom Hierarchy"
+            title="Top-to-bottom hierarchy"
           >
-            ⬇ Top-Down
+            <LuMoveDown className="h-3 w-3" aria-hidden />
+            <span className="hidden sm:inline">Top-down</span>
           </button>
           <button
             type="button"
             onClick={() => setTreeOrientation("LR")}
-            className={`px-2 py-1 text-[11px] font-medium rounded-md transition-all cursor-pointer ${
+            aria-pressed={treeOrientation === "LR"}
+            className={`${CONTROL_BUTTON} flex items-center gap-1 ${
               treeOrientation === "LR"
-                ? "bg-slate-800 text-cyan-300 border border-slate-700/80 font-semibold"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-surface text-ink shadow-sm ring-1 ring-line"
+                : "text-muted hover:text-ink"
             }`}
-            title="Left-to-Right Dendrogram"
+            title="Left-to-right dendrogram"
           >
-            ➡ Left-Right
+            <LuMoveRight className="h-3 w-3" aria-hidden />
+            <span className="hidden sm:inline">Left-right</span>
           </button>
         </div>
 
-        {/* Fit View */}
+        {/* Fit view */}
         <button
           type="button"
           onClick={() => fitView({ padding: 0.2, duration: 400 })}
-          className="px-2.5 py-1 text-[11px] bg-slate-800 hover:bg-slate-700 border border-slate-700/80 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer flex items-center gap-1"
-          title="Recenter and Fit View"
+          className="inline-flex items-center gap-1 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[11px] font-medium text-muted transition-colors hover:border-line-strong hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
+          title="Recenter and fit view"
         >
-          <span>⛶</span>
+          <LuScan className="h-3.5 w-3.5" aria-hidden />
           <span className="hidden sm:inline">Fit</span>
         </button>
       </div>
@@ -367,15 +365,12 @@ function FlowInner() {
         nodesDraggable={false}
         className="codemap-flow"
       >
-        <Background color="#334155" gap={24} size={1} />
-        <Controls
-          className="!bg-slate-900 !border-slate-800 !text-slate-300 [&>button]:!border-slate-800 [&>button]:!bg-slate-900 hover:[&>button]:!bg-slate-800"
-          showInteractive={false}
-        />
+        <Background color="#deded7" gap={22} size={1.2} />
+        <Controls showInteractive={false} />
         <MiniMap
-          nodeColor="#06b6d4"
-          maskColor="rgba(15, 23, 42, 0.75)"
-          className="!bg-slate-900 !border !border-slate-800 !rounded-lg overflow-hidden"
+          nodeColor="#b6b7ae"
+          maskColor="rgba(20, 22, 26, 0.05)"
+          className="hidden md:block"
           zoomable
           pannable
         />

@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LuArrowRight, LuChevronRight, LuX } from "react-icons/lu";
+import { SiGithub } from "react-icons/si";
 import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 const EXAMPLE_REPOS = [
@@ -27,7 +29,7 @@ export function GithubForm() {
 
     const trimmedUrl = url.trim();
     if (!trimmedUrl) {
-      setLocalError("Please enter a GitHub repository URL");
+      setLocalError("Enter a GitHub repository URL");
       return;
     }
 
@@ -49,78 +51,95 @@ export function GithubForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto space-y-4">
-      <div className="space-y-2">
-        <div className="relative">
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => {
-              setUrl(e.target.value);
-              if (localError) setLocalError("");
-            }}
-            placeholder="https://github.com/owner/repository"
-            disabled={isLoading}
-            className="w-full px-4 py-3.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/60 focus:border-cyan-500 transition-all font-mono disabled:opacity-50 shadow-inner"
-          />
-          {url && !isLoading && (
-            <button
-              type="button"
-              onClick={() => setUrl("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs px-1.5 py-0.5 rounded"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between text-xs px-1">
+    <form onSubmit={handleSubmit} className="w-full space-y-3">
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-faint">
+          <SiGithub className="h-[18px] w-[18px]" aria-hidden />
+        </span>
+        <input
+          type="text"
+          value={url}
+          onChange={(e) => {
+            setUrl(e.target.value);
+            if (localError) setLocalError("");
+          }}
+          placeholder="github.com/owner/repository"
+          disabled={isLoading}
+          aria-label="GitHub repository URL"
+          spellCheck={false}
+          autoComplete="off"
+          className="w-full rounded-xl border border-line bg-surface py-3.5 pl-11 pr-10 font-mono text-[14px] text-ink shadow-[0_1px_2px_rgba(20,22,26,0.04)] transition-colors placeholder:text-faint hover:border-line-strong focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+        />
+        {url && !isLoading && (
           <button
             type="button"
-            onClick={() => setShowBranch(!showBranch)}
-            className="text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-1 cursor-pointer"
+            onClick={() => setUrl("")}
+            aria-label="Clear URL"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 text-faint transition-colors hover:bg-surface-2 hover:text-ink"
           >
-            <span>{showBranch ? "▼" : "▶"}</span>
-            <span>Specify custom branch / subfolder</span>
+            <LuX className="h-4 w-4" aria-hidden />
           </button>
-        </div>
-
-        {showBranch && (
-          <div className="pt-1">
-            <input
-              type="text"
-              value={branch}
-              onChange={(e) => setBranch(e.target.value)}
-              placeholder="Branch (e.g. main, dev, or v2)"
-              disabled={isLoading}
-              className="w-full px-3.5 py-2.5 bg-slate-900/80 border border-slate-800 rounded-lg text-slate-200 placeholder-slate-600 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 font-mono disabled:opacity-50"
-            />
-          </div>
         )}
       </div>
 
+      <button
+        type="button"
+        onClick={() => setShowBranch((v) => !v)}
+        aria-expanded={showBranch}
+        className="inline-flex items-center gap-1.5 text-[13px] text-muted transition-colors hover:text-ink"
+      >
+        <span
+          className={`transition-transform duration-150 ${
+            showBranch ? "rotate-90" : ""
+          }`}
+          aria-hidden
+        >
+          <LuChevronRight className="h-3 w-3" aria-hidden />
+        </span>
+        Branch or subfolder
+      </button>
+
+      {showBranch && (
+        <input
+          type="text"
+          value={branch}
+          onChange={(e) => setBranch(e.target.value)}
+          placeholder="main, dev, or v2/src/components"
+          disabled={isLoading}
+          aria-label="Branch or subfolder"
+          spellCheck={false}
+          autoComplete="off"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-2.5 font-mono text-[13px] text-ink transition-colors placeholder:text-faint hover:border-line-strong focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-60"
+        />
+      )}
+
       {localError && (
-        <p className="text-xs text-red-400 px-1 font-medium">{localError}</p>
+        <p role="alert" className="text-[13px] font-medium text-red-600">
+          {localError}
+        </p>
       )}
 
       <button
         type="submit"
-        disabled={isLoading || !url.trim()}
-        className="w-full py-3.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+        disabled={isLoading}
+        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-6 py-3.5 text-[14px] font-medium text-background transition-all hover:bg-ink/85 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-            <span>Analyzing Repository...</span>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-background/30 border-t-background" />
+            <span>Analysing repository</span>
           </>
         ) : (
-          <span>Analyze Architecture</span>
+          <>
+            <span>Build the graph</span>
+            <LuArrowRight className="h-4 w-4" aria-hidden />
+          </>
         )}
       </button>
 
-      <div className="pt-3">
-        <div className="text-[11px] uppercase tracking-wider text-slate-500 font-medium mb-2 text-center">
-          Or try a quick demo repo:
+      <div className="pt-1">
+        <div className="mb-2 text-center text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+          Try one of these
         </div>
         <div className="flex flex-wrap justify-center gap-2">
           {EXAMPLE_REPOS.map((repo) => (
@@ -129,7 +148,7 @@ export function GithubForm() {
               type="button"
               onClick={() => handleSelectExample(repo.url, repo.branch)}
               disabled={isLoading}
-              className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-cyan-300 hover:border-slate-700 transition-all font-mono disabled:opacity-50 cursor-pointer"
+              className="rounded-lg border border-line bg-surface px-2.5 py-1.5 font-mono text-[12px] text-muted transition-colors hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               {repo.label}
             </button>

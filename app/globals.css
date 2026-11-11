@@ -1,16 +1,88 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
+/* ---------------------------------------------------------------------------
+   Theme tokens
+
+   Every colour the landing page uses is a semantic token declared here.
+   Tailwind's `@theme inline` block maps those tokens onto utilities such as
+   `bg-surface`, `text-muted` and `border-line`.
+   --------------------------------------------------------------------------- */
+
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #fcfcf9;
+  --foreground: #14161a;
+
+  --surface: #ffffff;
+  --surface-2: #f4f4ef;
+  --surface-3: #ebebe5;
+
+  --ink: #14161a;
+  --muted: #565c64;
+  --faint: #757b84;
+
+  --line: #e4e4dd;
+  --line-strong: #d1d1c8;
+
+  --accent: #bf4220;
+  --accent-strong: #98331a;
+  --accent-soft: #fbeee9;
+
+  --danger: #a8391f;
+  --danger-soft: #fbeeea;
+  --danger-line: #edc9c0;
+
+  --warning: #8a641f;
+  --warning-soft: #faf3e3;
+  --warning-line: #ead9b6;
+
+  --success: #3f6849;
+  --success-soft: #eef4ec;
+  --success-line: #d3e0cf;
+
+  --grid-line: #e9e9e2;
+
+  --scroll-thumb: rgba(20, 22, 26, 0.18);
+  --scroll-thumb-hover: rgba(20, 22, 26, 0.32);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-line: var(--warning-line);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-line: var(--success-line);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -18,24 +90,78 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  font-feature-settings: "cv11", "ss01";
 }
 
+::selection {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+   --------------------------------------------------------------------------- */
+
+/* Fine drafting grid behind the hero, faded out towards the fold. */
+.grid-field {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(
+    ellipse 100% 80% at 50% 0%,
+    #000 0%,
+    transparent 80%
+  );
+  mask-image: radial-gradient(
+    ellipse 100% 80% at 50% 0%,
+    #000 0%,
+    transparent 80%
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbars
+   --------------------------------------------------------------------------- */
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: var(--scroll-thumb-hover);
+  background-clip: content-box;
+}
+
+/* ---------------------------------------------------------------------------
+   React Flow (explore view)
+   --------------------------------------------------------------------------- */
+
+.codemap-flow {
+  --xy-background-color: var(--background);
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--surface-2);
+  --xy-controls-button-color: var(--muted);
+  --xy-controls-button-color-hover: var(--ink);
+  --xy-controls-button-border-color: var(--line);
+  --xy-controls-box-shadow: 0 1px 2px rgba(20, 22, 26, 0.05);
+  --xy-minimap-background-color: var(--surface);
+  --xy-minimap-mask-background-color: rgba(252, 252, 249, 0.72);
+  --xy-handle-background-color: #b5b6ad;
+  --xy-handle-border-color: var(--surface);
 }
 
 .react-flow__pane {
@@ -48,4 +174,30 @@ body {
 
 .react-flow__attribution {
   display: none;
+}
+
+.react-flow__controls {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.react-flow__controls-button {
+  border-bottom: 1px solid var(--line);
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none;
+}
+
+.react-flow__minimap {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(20, 22, 26, 0.05);
+}
+
+.react-flow__selection {
+  background: rgba(191, 66, 32, 0.06);
+  border: 1px dashed var(--accent);
 }
